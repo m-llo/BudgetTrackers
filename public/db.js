@@ -1,26 +1,26 @@
 let db;
-let budgetVersion;
+// let budgetVersion;
 
-// Create a new db request for a "budget" database.
-const request = indexedDB.open('BudgetDB', budgetVersion || 21);
+// const request = indexedDB.open('BudgetDB', budgetVersion || 1);
+const request = indexedDB.open('BudgetDB', 1);
 
-request.onupgradeneeded = function (e) {
+request.onupgradeneeded = function (event) {
   console.log('Upgrade needed in IndexDB');
 
-  const { oldVersion } = e;
-  const newVersion = e.newVersion || db.version;
+  const { oldVersion } = event;
+  const newVersion = event.newVersion || db.version;
 
   console.log(`DB Updated from version ${oldVersion} to ${newVersion}`);
 
-  db = e.target.result;
+  db = event.target.result;
 
   if (db.objectStoreNames.length === 0) {
-    db.createObjectStore('BudgetStore', { autoIncrement: true });
+  const objectStore =  db.createObjectStore('BudgetStore', { autoIncrement: true });
+        objectStore.createIndex("name", "name");
+        objectStore.createIndex("amount", "amount");
+        objectStore.createIndex("date", "date");
+        
   }
-};
-
-request.onerror = function (e) {
-  console.log(`Woops! ${e.target.errorCode}`);
 };
 
 function checkDatabase() {
@@ -59,16 +59,16 @@ function checkDatabase() {
 
             // Clear existing entries because our bulk add was successful
             currentStore.clear();
-            console.log('Clearing store 🧹');
+            console.log('Clearing store');
           }
         });
     }
   };
 }
 
-request.onsuccess = function (e) {
+request.onsuccess = function (event) {
   console.log('success');
-  db = e.target.result;
+  db = event.target.result;
 
   // Check if app is online before reading from db
   if (navigator.onLine) {
